@@ -13,6 +13,9 @@ import time
 from smtplib import SMTP_SSL
 import sys
 
+requests.DEFAULT_RETRIES = 5  # 增加重试连接次数
+s = requests.session()
+s.keep_alive = False  # 关闭多余连接
 
 host = 'jksb.v.zzu.edu.cn'
 hea = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
@@ -104,8 +107,7 @@ class jksb:
             self.submit_data['men6'] = jksb_data['men6']
             return True
     def post_url(self):
-        session = requests.Session()
-        html = session.post('https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/login',  data = self.post_data,headers = hea1,verify = verify_path)
+        html = s.post('https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/login',  data = self.post_data,headers = hea1,verify = verify_path)
         url = self.re_url(html)
         print(url)
         if len(url)>0:
@@ -114,22 +116,19 @@ class jksb:
         else:
             return 0
     def get_url1(self,url):
-        session = requests.Session()
-        html = session.get(url,headers = hea,verify = verify_path)
+        html = s.get(url,headers = hea,verify = verify_path)
         url = self.re_url1(html)
         if len(url)>0:
             return url
         else:
             return 0
     def get_url2(self,url):
-        session = requests.Session()
-        html = session.get(url,headers = hea,verify = verify_path)
+        html = s.get(url,headers = hea,verify = verify_path)
         return self.re_content(html)
     def jksb(self):
         url = "https://jksb.v.zzu.edu.cn/vls6sss/zzujksb.dll/jksb"
-        session = requests.Session()
-        html = session.post(url,data = jksb_data, headers = hea3,verify = verify_path)
-        html = session.post(url,data = self.submit_data,headers = hea2,verify = verify_path)
+        html = s.post(url,data = jksb_data, headers = hea3,verify = verify_path)
+        html = s.post(url,data = self.submit_data,headers = hea2,verify = verify_path)
         html.encoding = 'utf-8' #这一行是将编码转为utf-8否则中文会显示乱码。
         html = html.text
         soup1 = BeautifulSoup(html,'lxml')
